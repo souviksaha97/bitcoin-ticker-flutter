@@ -1,4 +1,7 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:bitcoin_ticker/coin_data.dart';
+import 'coin_data.dart';
 
 class PriceScreen extends StatefulWidget {
   @override
@@ -6,45 +9,94 @@ class PriceScreen extends StatefulWidget {
 }
 
 class _PriceScreenState extends State<PriceScreen> {
+  String selectedCurrency = "USD";
+  String selectedCrypto = "BTC";
+
+  double currencyRate = 1.00;
+  double cryptoRate = 1.00;
+
+  CoinData coinData = new CoinData();
+
+  @override
+  void initState() {
+    super.initState();
+    updateUI();
+  }
+
+  void updateUI() async{
+    var tempRate = await coinData.returnExchangeRate(selectedCrypto, selectedCurrency);
+    setState(() {
+      cryptoRate = tempRate;
+    });
+  }
+
+  DropdownButton<String> dropdownCurrency() {
+    List<DropdownMenuItem<String>> dropdownItems = [];
+    for (int i = 0; i < currenciesList.length; i++) {
+      dropdownItems.add(
+        DropdownMenuItem(
+            child: Text(currenciesList[i]), value: currenciesList[i]),
+      );
+    }
+    return DropdownButton<String>(
+      items: dropdownItems,
+      value: selectedCurrency,
+      onChanged: (value) {
+          selectedCurrency = value;
+          updateUI();
+      },
+    );
+  }
+
+  DropdownButton<String> dropdownCrypto() {
+    List<DropdownMenuItem<String>> dropdownItems = [];
+    for (int i = 0; i < cryptoList.length; i++) {
+      dropdownItems.add(
+        DropdownMenuItem(child: Text(cryptoList[i]), value: cryptoList[i]),
+      );
+    }
+    return DropdownButton<String>(
+      items: dropdownItems,
+      value: selectedCrypto,
+      onChanged: (value) {
+          selectedCrypto = value;
+          updateUI();
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: Text('🤑 Coin Ticker'),
+        elevation: 0,
+        title: Text(
+          'Coin Ticker',
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.transparent,
       ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
-          Padding(
-            padding: EdgeInsets.fromLTRB(18.0, 18.0, 18.0, 0),
-            child: Card(
-              color: Colors.lightBlueAccent,
-              elevation: 5.0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10.0),
-              ),
-              child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 28.0),
-                child: Text(
-                  '1 BTC = ? USD',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 20.0,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
+      body: SafeArea(
+        child: Container(
+          decoration: BoxDecoration(
+              gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Color(0xff3D3751), Color(0xff183554)])),
+          child: Center(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Text(currencyRate.toStringAsFixed(2)),
+                dropdownCrypto(),
+                Text(cryptoRate.toStringAsFixed(2)),
+                dropdownCurrency(),
+              ],
             ),
           ),
-          Container(
-            height: 150.0,
-            alignment: Alignment.center,
-            padding: EdgeInsets.only(bottom: 30.0),
-            color: Colors.lightBlue,
-            child: null,
-          ),
-        ],
+        ),
       ),
     );
   }
